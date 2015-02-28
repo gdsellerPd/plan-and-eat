@@ -1,16 +1,18 @@
 'use strict';
 
 var lib = 'lib',
-    src = 'src';
+    src = 'src',
+    dist = 'dist',
+    serverport = 4000;
 
 module.exports = {
-  serverport: 4000,
+  serverport: serverport,
   src: src,
   lib: lib,
   main: 'mylibrary.js',
-  dist: 'dist',
+  dist: dist,
   watch: {
-    paths: ['js', 'scss'].reduce(function(paths, ext) {
+    paths: ['js', 'scss', 'html'].reduce(function(paths, ext) {
       return paths.concat([src + '/**/*.' + ext, src + '/*.' + ext]);
     }, [])
   },
@@ -22,5 +24,11 @@ module.exports = {
   inject: {
     addRootSlash: true,
     relative: true
+  },
+  browserSync: {
+    server: {
+      baseDir: 'dist',
+      index: 'index.html'
+    }
   }
 };

@@ -3,6 +3,6 @@
 var config = require('../config');
 var gulp = require('gulp');
 
-gulp.task('watch', ['build'], function() {
-  return gulp.watch(config.watch.paths, ['build']);
+gulp.task('watch', ['build', 'browser-sync'], function() {
+  return gulp.watch(config.watch.paths, ['build', 'browser-reload']);
 });
