@@ -1,0 +1,19 @@
+{
+  "name": "meal-planner",
+  "main": "index.js",
+  "version": "0.0.0",
+  "authors": [
+    "Brian Scaturro <scaturrob@gmail.com>"
+  ],
+  "description": "planning meals and such",
+  "keywords": [
+    "planning",
+    "food",
+    "eating"
+  ],
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "bootstrap-sass-official": "~3.3.3"
+  }
+}
