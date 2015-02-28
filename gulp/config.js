@@ -18,5 +18,9 @@ module.exports = {
     includePaths:[
       'bower_components/bootstrap-sass-official/assets/stylesheets/'
     ]
+  },
+  inject: {
+    addRootSlash: true,
+    relative: true
   }
 };

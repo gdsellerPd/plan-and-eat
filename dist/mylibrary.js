@@ -53,7 +53,7 @@ require("regenerator-6to5/runtime");
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"core-js/shim":5,"regenerator-6to5/runtime":6}],5:[function(require,module,exports){
 /**
- * Core.js 0.4.10
+ * Core.js 0.5.4
  * https://github.com/zloirock/core-js
  * License: http://rock.mit-license.org
  * © 2015 Denis Pushkarev
@@ -107,9 +107,12 @@ var OBJECT          = 'Object'
   , Symbol          = global[SYMBOL]
   , Math            = global[MATH]
   , TypeError       = global.TypeError
+  , RangeError      = global.RangeError
   , setTimeout      = global.setTimeout
   , setImmediate    = global.setImmediate
   , clearImmediate  = global.clearImmediate
+  , parseInt        = global.parseInt
+  , isFinite        = global.isFinite
   , process         = global[PROCESS]
   , nextTick        = process && process.nextTick
   , document        = global.document
@@ -120,11 +123,16 @@ var OBJECT          = 'Object'
   , ObjectProto     = Object[PROTOTYPE]
   , FunctionProto   = Function[PROTOTYPE]
   , Infinity        = 1 / 0
-  , DOT             = '.';
+  , DOT             = '.'
+  // Methods from https://github.com/DeveloperToolsWG/console-object/blob/master/api.md
+  , CONSOLE_METHODS = 'assert,clear,count,debug,dir,dirxml,error,exception,' +
+      'group,groupCollapsed,groupEnd,info,isIndependentlyComposed,log,' +
+      'markTimeline,profile,profileEnd,table,time,timeEnd,timeline,' +
+      'timelineEnd,timeStamp,trace,warn';
 
 // http://jsperf.com/core-js-isobject
 function isObject(it){
-  return it != null && (typeof it == 'object' || typeof it == 'function');
+  return it !== null && (typeof it == 'object' || typeof it == 'function');
 }
 function isFunction(it){
   return typeof it == 'function';
@@ -134,20 +142,17 @@ var isNative = ctx(/./.test, /\[native code\]\s*\}\s*$/, 1);
 
 // Object internal [[Class]] or toStringTag
 // http://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.prototype.tostring
-var buildIn = {
-  Undefined: 1, Null: 1, Array: 1, String: 1, Arguments: 1,
-  Function: 1, Error: 1, Boolean: 1, Number: 1, Date: 1, RegExp:1 
-} , toString = ObjectProto[TO_STRING];
+var toString = ObjectProto[TO_STRING];
 function setToStringTag(it, tag, stat){
   if(it && !has(it = stat ? it : it[PROTOTYPE], SYMBOL_TAG))hidden(it, SYMBOL_TAG, tag);
 }
 function cof(it){
-  return it == undefined ? it === undefined
-    ? 'Undefined' : 'Null' : toString.call(it).slice(8, -1);
+  return toString.call(it).slice(8, -1);
 }
 function classof(it){
-  var klass = cof(it), tag;
-  return klass == OBJECT && (tag = it[SYMBOL_TAG]) ? has(buildIn, tag) ? '~' + tag : tag : klass;
+  var O, T;
+  return it == undefined ? it === undefined ? 'Undefined' : 'Null'
+    : typeof (T = (O = Object(it))[SYMBOL_TAG]) == 'string' ? T : cof(O);
 }
 
 // Function
@@ -344,6 +349,8 @@ function generic(A, B){
 
 // Math
 var MAX_SAFE_INTEGER = 0x1fffffffffffff // pow(2, 53) - 1 == 9007199254740991
+  , pow    = Math.pow
+  , abs    = Math.abs
   , ceil   = Math.ceil
   , floor  = Math.floor
   , max    = Math.max
@@ -367,6 +374,9 @@ function toLength(it){
 function toIndex(index, length){
   var index = toInteger(index);
   return index < 0 ? max(index + length, 0) : min(index, length);
+}
+function lz(num){
+  return num > 9 ? num : '0' + num;
 }
 
 function createReplacer(regExp, replace, isStatic){
@@ -437,7 +447,11 @@ function getWellKnownSymbol(name, setter){
   return (Symbol && Symbol[name]) || (setter ? Symbol : safeSymbol)(SYMBOL + DOT + name);
 }
 // The engine works fine with descriptors? Thank's IE8 for his funny defineProperty.
-var DESC   = !!function(){try{return defineProperty({}, DOT, ObjectProto)}catch(e){}}()
+var DESC = !!function(){
+      try {
+        return defineProperty({}, 'a', {get: function(){ return 2 }}).a == 2;
+      } catch(e){}
+    }()
   , sid    = 0
   , hidden = createDefiner(1)
   , set    = Symbol ? simpleSet : hidden
@@ -556,7 +570,8 @@ var NODE = cof(process) == PROCESS
   , STATIC = 4
   , PROTO  = 8
   , BIND   = 16
-  , WRAP   = 32;
+  , WRAP   = 32
+  , SIMPLE = 64;
 function $define(type, name, source){
   var key, own, out, exp
     , isGlobal = type & GLOBAL
@@ -570,8 +585,10 @@ function $define(type, name, source){
       && (!isFunction(target[key]) || isNative(target[key]));
     // export native or passed
     out = (own ? target : source)[key];
+    // prevent global pollution for namespaces
+    if(!framework && isGlobal && !isFunction(target[key]))exp = source[key];
     // bind timers to global for call from export context
-    if(type & BIND && own)exp = ctx(out, global);
+    else if(type & BIND && own)exp = ctx(out, global);
     // wrap global constructors for prevent change them in library
     else if(type & WRAP && !framework && target[key] == out){
       exp = function(param){
@@ -579,13 +596,13 @@ function $define(type, name, source){
       }
       exp[PROTOTYPE] = out[PROTOTYPE];
     } else exp = type & PROTO && isFunction(out) ? ctx(call, out) : out;
-    // export
-    if(exports[key] != out)hidden(exports, key, exp);
     // extend global
     if(framework && target && !own){
-      if(isGlobal)target[key] = out;
+      if(isGlobal || type & SIMPLE)target[key] = out;
       else delete target[key] && hidden(target, key, out);
     }
+    // export
+    if(exports[key] != out)hidden(exports, key, exp);
   }
 }
 // CommonJS export
@@ -603,13 +620,7 @@ if(exportGlobal || framework){
 }
 
 /******************************************************************************
- * Module : global                                                            *
- ******************************************************************************/
-
-$define(GLOBAL + FORCED, {global: global});
-
-/******************************************************************************
- * Module : es6_symbol                                                        *
+ * Module : es6.symbol                                                        *
  ******************************************************************************/
 
 // ECMAScript 6 symbols shim
@@ -690,29 +701,10 @@ $define(GLOBAL + FORCED, {global: global});
 }(safeSymbol('tag'), {}, {}, true);
 
 /******************************************************************************
- * Module : es6                                                               *
+ * Module : es6.object                                                        *
  ******************************************************************************/
 
-// ECMAScript 6 shim
-!function(RegExpProto, isFinite, tmp, NAME){
-  var RangeError = global.RangeError
-      // 20.1.2.3 Number.isInteger(number)
-    , isInteger = Number.isInteger || function(it){
-        return !isObject(it) && isFinite(it) && floor(it) === it;
-      }
-      // 20.2.2.28 Math.sign(x)
-    , sign = Math.sign || function sign(x){
-        return (x = +x) == 0 || x != x ? x : x < 0 ? -1 : 1;
-      }
-    , E    = Math.E
-    , pow  = Math.pow
-    , abs  = Math.abs
-    , exp  = Math.exp
-    , log  = Math.log
-    , sqrt = Math.sqrt
-    , fcc  = String.fromCharCode
-    , at   = createPointAt(true);
-  
+!function(tmp){
   var objectStatic = {
     // 19.1.3.1 Object.assign(target, source)
     assign: assign,
@@ -738,15 +730,118 @@ $define(GLOBAL + FORCED, {global: global});
   }();
   $define(STATIC, OBJECT, objectStatic);
   
-  // 20.2.2.5 Math.asinh(x)
-  function asinh(x){
-    return !isFinite(x = +x) || x == 0 ? x : x < 0 ? -asinh(-x) : log(x + sqrt(x * x + 1));
-  }
-  // 20.2.2.14 Math.expm1(x)
-  function expm1(x){
-    return (x = +x) == 0 ? x : x > -1e-6 && x < 1e-6 ? x + x * x / 2 : exp(x) - 1;
+  if(framework){
+    // 19.1.3.6 Object.prototype.toString()
+    tmp[SYMBOL_TAG] = DOT;
+    if(cof(tmp) != DOT)hidden(ObjectProto, TO_STRING, function(){
+      return '[object ' + classof(this) + ']';
+    });
   }
   
+  // 20.2.1.9 Math[@@toStringTag]
+  setToStringTag(Math, MATH, true);
+  // 24.3.3 JSON[@@toStringTag]
+  setToStringTag(global.JSON, 'JSON', true);
+}({});
+
+/******************************************************************************
+ * Module : es6.object.statics-accept-primitives                              *
+ ******************************************************************************/
+
+!function(){
+  // Object static methods accept primitives
+  function wrapObjectMethod(key, MODE){
+    var fn  = Object[key]
+      , exp = core[OBJECT][key]
+      , f   = 0
+      , o   = {};
+    if(!exp || isNative(exp)){
+      o[key] = MODE == 1 ? function(it){
+        return isObject(it) ? fn(it) : it;
+      } : MODE == 2 ? function(it){
+        return isObject(it) ? fn(it) : true;
+      } : MODE == 3 ? function(it){
+        return isObject(it) ? fn(it) : false;
+      } : MODE == 4 ? function(it, key){
+        return fn(toObject(it), key);
+      } : function(it){
+        return fn(toObject(it));
+      };
+      try { fn(DOT) }
+      catch(e){ f = 1 }
+      $define(STATIC + FORCED * f, OBJECT, o);
+    }
+  }
+  wrapObjectMethod('freeze', 1);
+  wrapObjectMethod('seal', 1);
+  wrapObjectMethod('preventExtensions', 1);
+  wrapObjectMethod('isFrozen', 2);
+  wrapObjectMethod('isSealed', 2);
+  wrapObjectMethod('isExtensible', 3);
+  wrapObjectMethod('getOwnPropertyDescriptor', 4);
+  wrapObjectMethod('getPrototypeOf');
+  wrapObjectMethod('keys');
+  wrapObjectMethod('getOwnPropertyNames');
+}();
+
+/******************************************************************************
+ * Module : es6.function                                                      *
+ ******************************************************************************/
+
+!function(NAME){
+  // 19.2.4.2 name
+  NAME in FunctionProto || defineProperty(FunctionProto, NAME, {
+    configurable: true,
+    get: function(){
+      var match = String(this).match(/^\s*function ([^ (]*)/)
+        , name  = match ? match[1] : '';
+      has(this, NAME) || defineProperty(this, NAME, descriptor(5, name));
+      return name;
+    },
+    set: function(value){
+      has(this, NAME) || defineProperty(this, NAME, descriptor(0, value));
+    }
+  });
+}('name');
+
+/******************************************************************************
+ * Module : es6.number.constructor                                            *
+ ******************************************************************************/
+
+Number('0o1') && Number('0b1') || function(_Number, NumberProto){
+  function toNumber(it){
+    if(isObject(it))it = toPrimitive(it);
+    if(typeof it == 'string' && it.length > 2 && it.charCodeAt(0) == 48){
+      var binary = false;
+      switch(it.charCodeAt(1)){
+        case 66 : case 98  : binary = true;
+        case 79 : case 111 : return parseInt(it.slice(2), binary ? 2 : 8);
+      }
+    } return +it;
+  }
+  function toPrimitive(it){
+    var fn, val;
+    if(isFunction(fn = it.valueOf) && !isObject(val = fn.call(it)))return val;
+    if(isFunction(fn = it[TO_STRING]) && !isObject(val = fn.call(it)))return val;
+    throw TypeError("Can't convert object to number");
+  }
+  Number = function Number(it){
+    return this instanceof Number ? new _Number(toNumber(it)) : toNumber(it);
+  }
+  forEach.call(DESC ? getNames(_Number)
+  : array('MAX_VALUE,MIN_VALUE,NaN,NEGATIVE_INFINITY,POSITIVE_INFINITY'), function(key){
+    key in Number || defineProperty(Number, key, getOwnDescriptor(_Number, key));
+  });
+  Number[PROTOTYPE] = NumberProto;
+  NumberProto[CONSTRUCTOR] = Number;
+  hidden(global, NUMBER, Number);
+}(Number, Number[PROTOTYPE]);
+
+/******************************************************************************
+ * Module : es6.number                                                        *
+ ******************************************************************************/
+
+!function(isInteger){
   $define(STATIC, NUMBER, {
     // 20.1.2.1 Number.EPSILON
     EPSILON: pow(2, -52),
@@ -771,7 +866,35 @@ $define(GLOBAL + FORCED, {global: global});
     // 20.1.2.13 Number.parseInt(string, radix)
     parseInt: parseInt
   });
+// 20.1.2.3 Number.isInteger(number)
+}(Number.isInteger || function(it){
+  return !isObject(it) && isFinite(it) && floor(it) === it;
+});
+
+/******************************************************************************
+ * Module : es6.math                                                          *
+ ******************************************************************************/
+
+// ECMAScript 6 shim
+!function(){
+  // 20.2.2.28 Math.sign(x)
+  var E    = Math.E
+    , exp  = Math.exp
+    , log  = Math.log
+    , sqrt = Math.sqrt
+    , sign = Math.sign || function(x){
+        return (x = +x) == 0 || x != x ? x : x < 0 ? -1 : 1;
+      };
   
+  // 20.2.2.5 Math.asinh(x)
+  function asinh(x){
+    return !isFinite(x = +x) || x == 0 ? x : x < 0 ? -asinh(-x) : log(x + sqrt(x * x + 1));
+  }
+  // 20.2.2.14 Math.expm1(x)
+  function expm1(x){
+    return (x = +x) == 0 ? x : x > -1e-6 && x < 1e-6 ? x + x * x / 2 : exp(x) - 1;
+  }
+    
   $define(STATIC, MATH, {
     // 20.2.2.3 Math.acosh(x)
     acosh: function(x){
@@ -855,12 +978,17 @@ $define(GLOBAL + FORCED, {global: global});
     // 20.2.2.34 Math.trunc(x)
     trunc: trunc
   });
-  // 20.2.1.9 Math[@@toStringTag]
-  setToStringTag(Math, MATH, true);
-  
+}();
+
+/******************************************************************************
+ * Module : es6.string                                                        *
+ ******************************************************************************/
+
+!function(fromCharCode){
   function assertNotRegExp(it){
     if(cof(it) == REGEXP)throw TypeError();
   }
+  
   $define(STATIC, STRING, {
     // 21.1.2.2 String.fromCodePoint(...codePoints)
     fromCodePoint: function(x){
@@ -872,8 +1000,8 @@ $define(GLOBAL + FORCED, {global: global});
         code = +arguments[i++];
         if(toIndex(code, 0x10ffff) !== code)throw RangeError(code + ' is not a valid code point');
         res.push(code < 0x10000
-          ? fcc(code)
-          : fcc(((code -= 0x10000) >> 10) + 0xd800, code % 0x400 + 0xdc00)
+          ? fromCharCode(code)
+          : fromCharCode(((code -= 0x10000) >> 10) + 0xd800, code % 0x400 + 0xdc00)
         );
       } return res.join('');
     },
@@ -890,6 +1018,7 @@ $define(GLOBAL + FORCED, {global: global});
       } return res.join('');
     }
   });
+  
   $define(PROTO, STRING, {
     // 21.1.3.3 String.prototype.codePointAt(pos)
     codePointAt: createPointAt(false),
@@ -926,35 +1055,25 @@ $define(GLOBAL + FORCED, {global: global});
       return that.slice(index, index + searchString.length) === searchString;
     }
   });
-  // 21.1.3.27 String.prototype[@@iterator]()
-  defineStdIterators(String, STRING, function(iterated){
-    set(this, ITER, {o: String(iterated), i: 0});
-  // 21.1.5.2.1 %StringIteratorPrototype%.next()
-  }, function(){
-    var iter  = this[ITER]
-      , O     = iter.o
-      , index = iter.i
-      , point;
-    if(index >= O.length)return iterResult(1);
-    point = at.call(O, index);
-    iter.i += point.length;
-    return iterResult(0, point);
-  });
-  
+}(String.fromCharCode);
+
+/******************************************************************************
+ * Module : es6.array                                                         *
+ ******************************************************************************/
+
+!function(){
   $define(STATIC, ARRAY, {
     // 22.1.2.1 Array.from(arrayLike, mapfn = undefined, thisArg = undefined)
     from: function(arrayLike/*, mapfn = undefined, thisArg = undefined*/){
       var O       = Object(assertDefined(arrayLike))
-        , result  = new (generic(this, Array))
         , mapfn   = arguments[1]
-        , that    = arguments[2]
         , mapping = mapfn !== undefined
-        , f       = mapping ? ctx(mapfn, that, 2) : undefined
+        , f       = mapping ? ctx(mapfn, arguments[2], 2) : undefined
         , index   = 0
-        , length;
-      if(isIterable(O))for(var iter = getIterator(O), step; !(step = iter.next()).done; index++){
+        , length, result, iter, step;
+      if(isIterable(O))for(iter = getIterator(O), result = new (generic(this, Array)); !(step = iter.next()).done; index++){
         result[index] = mapping ? f(step.value, index) : step.value;
-      } else for(length = toLength(O.length); length > index; index++){
+      } else for(result = new (generic(this, Array))(length = toLength(O.length)); length > index; index++){
         result[index] = mapping ? f(O[index], index) : O[index];
       }
       result.length = index;
@@ -970,6 +1089,7 @@ $define(GLOBAL + FORCED, {global: global});
       return result;
     }
   });
+  
   $define(PROTO, ARRAY, {
     // 22.1.3.3 Array.prototype.copyWithin(target, start, end = this.length)
     copyWithin: function(target /* = 0 */, start /* = 0, end = @length */){
@@ -1008,6 +1128,23 @@ $define(GLOBAL + FORCED, {global: global});
     // 22.1.3.9 Array.prototype.findIndex(predicate, thisArg = undefined)
     findIndex: createArrayMethod(6)
   });
+  
+  if(framework){
+    // 22.1.3.31 Array.prototype[@@unscopables]
+    forEach.call(array('find,findIndex,fill,copyWithin,entries,keys,values'), function(it){
+      ArrayUnscopables[it] = true;
+    });
+    SYMBOL_UNSCOPABLES in ArrayProto || hidden(ArrayProto, SYMBOL_UNSCOPABLES, ArrayUnscopables);
+  }  
+  
+  setSpecies(Array);
+}();
+
+/******************************************************************************
+ * Module : es6.iterators                                                     *
+ ******************************************************************************/
+
+!function(at){
   // 22.1.3.4 Array.prototype.entries()
   // 22.1.3.13 Array.prototype.keys()
   // 22.1.3.29 Array.prototype.values()
@@ -1020,7 +1157,10 @@ $define(GLOBAL + FORCED, {global: global});
       , O     = iter.o
       , kind  = iter.k
       , index = iter.i++;
-    if(!O || index >= O.length)return iter.o = undefined, iterResult(1);
+    if(!O || index >= O.length){
+      iter.o = undefined;
+      return iterResult(1);
+    }
     if(kind == KEY)  return iterResult(0, index);
     if(kind == VALUE)return iterResult(0, O[index]);
                      return iterResult(0, [index, O[index]]);
@@ -1029,97 +1169,74 @@ $define(GLOBAL + FORCED, {global: global});
   // argumentsList[@@iterator] is %ArrayProto_values% (9.4.4.6, 9.4.4.7)
   Iterators[ARGUMENTS] = Iterators[ARRAY];
   
-  // 24.3.3 JSON[@@toStringTag]
-  setToStringTag(global.JSON, 'JSON', true);
-  
-  // Object static methods accept primitives
-  function wrapObjectMethod(key, MODE){
-    var fn  = Object[key]
-      , exp = core[OBJECT][key]
-      , f   = 0
-      , o   = {};
-    if(!exp || isNative(exp)){
-      o[key] =
-        MODE == 1 ? function(it){ return isObject(it) ? fn(it) : it } :
-        MODE == 2 ? function(it){ return isObject(it) ? fn(it) : true } :
-        MODE == 3 ? function(it){ return isObject(it) ? fn(it) : false } :
-        MODE == 4 ? function(it, key){ return fn(toObject(it), key) } :
-                    function(it){ return fn(toObject(it)) }
-      try { fn(DOT) }
-      catch(e){ f = 1}
-      $define(STATIC + FORCED * f, OBJECT, o);
-    }
-  }
-  wrapObjectMethod('freeze', 1);
-  wrapObjectMethod('seal', 1);
-  wrapObjectMethod('preventExtensions', 1);
-  wrapObjectMethod('isFrozen', 2);
-  wrapObjectMethod('isSealed', 2);
-  wrapObjectMethod('isExtensible', 3);
-  wrapObjectMethod('getOwnPropertyDescriptor', 4);
-  wrapObjectMethod('getPrototypeOf');
-  wrapObjectMethod('keys');
-  wrapObjectMethod('getOwnPropertyNames');
-  
-  if(framework){
-    // 19.1.3.6 Object.prototype.toString()
-    tmp[SYMBOL_TAG] = DOT;
-    if(cof(tmp) != DOT)hidden(ObjectProto, TO_STRING, function(){
-      return '[object ' + classof(this) + ']';
-    });
-    
-    // 19.2.4.2 name
-    NAME in FunctionProto || defineProperty(FunctionProto, NAME, {
-      configurable: true,
-      get: function(){
-        var match = String(this).match(/^\s*function ([^ (]*)/)
-          , name  = match ? match[1] : '';
-        has(this, NAME) || defineProperty(this, NAME, descriptor(5, name));
-        return name;
-      },
-      set: function(value){
-        has(this, NAME) || defineProperty(this, NAME, descriptor(0, value));
-      }
-    });
-    
-    // RegExp allows a regex with flags as the pattern
-    if(DESC && !function(){try{return RegExp(/a/g, 'i') == '/a/i'}catch(e){}}()){
-      var _RegExp = RegExp;
-      RegExp = function RegExp(pattern, flags){
-        return new _RegExp(cof(pattern) == REGEXP && flags !== undefined
-          ? pattern.source : pattern, flags);
-      }
-      forEach.call(getNames(_RegExp), function(key){
-        key in RegExp || defineProperty(RegExp, key, {
-          configurable: true,
-          get: function(){ return _RegExp[key] },
-          set: function(it){ _RegExp[key] = it }
-        });
-      });
-      RegExpProto[CONSTRUCTOR] = RegExp;
-      RegExp[PROTOTYPE] = RegExpProto;
-      hidden(global, REGEXP, RegExp);
-    }
-    
-    // 21.2.5.3 get RegExp.prototype.flags()
-    if(/./g.flags != 'g')defineProperty(RegExpProto, 'flags', {
-      configurable: true,
-      get: createReplacer(/^.*\/(\w*)$/, '$1')
-    });
-    
-    // 22.1.3.31 Array.prototype[@@unscopables]
-    forEach.call(array('find,findIndex,fill,copyWithin,entries,keys,values'), function(it){
-      ArrayUnscopables[it] = true;
-    });
-    SYMBOL_UNSCOPABLES in ArrayProto || hidden(ArrayProto, SYMBOL_UNSCOPABLES, ArrayUnscopables);
-  }
-  
-  setSpecies(RegExp);
-  setSpecies(Array);
-}(RegExp[PROTOTYPE], isFinite, {}, 'name');
+  // 21.1.3.27 String.prototype[@@iterator]()
+  defineStdIterators(String, STRING, function(iterated){
+    set(this, ITER, {o: String(iterated), i: 0});
+  // 21.1.5.2.1 %StringIteratorPrototype%.next()
+  }, function(){
+    var iter  = this[ITER]
+      , O     = iter.o
+      , index = iter.i
+      , point;
+    if(index >= O.length)return iterResult(1);
+    point = at.call(O, index);
+    iter.i += point.length;
+    return iterResult(0, point);
+  });
+}(createPointAt(true));
 
 /******************************************************************************
- * Module : immediate                                                         *
+ * Module : es6.regexp                                                        *
+ ******************************************************************************/
+
+!function(RegExpProto, _RegExp){
+  function assertRegExpWrapper(fn){
+    return function(){
+      assert(cof(this) === REGEXP);
+      return fn(this);
+    }
+  }
+  
+  // RegExp allows a regex with flags as the pattern
+  if(DESC && !function(){try{return RegExp(/a/g, 'i') == '/a/i'}catch(e){}}()){
+    RegExp = function RegExp(pattern, flags){
+      return new _RegExp(cof(pattern) == REGEXP && flags !== undefined
+        ? pattern.source : pattern, flags);
+    }
+    forEach.call(getNames(_RegExp), function(key){
+      key in RegExp || defineProperty(RegExp, key, {
+        configurable: true,
+        get: function(){ return _RegExp[key] },
+        set: function(it){ _RegExp[key] = it }
+      });
+    });
+    RegExpProto[CONSTRUCTOR] = RegExp;
+    RegExp[PROTOTYPE] = RegExpProto;
+    hidden(global, REGEXP, RegExp);
+  }
+  
+  // 21.2.5.3 get RegExp.prototype.flags()
+  if(/./g.flags != 'g')defineProperty(RegExpProto, 'flags', {
+    configurable: true,
+    get: assertRegExpWrapper(createReplacer(/^.*\/(\w*)$/, '$1', true))
+  });
+  
+  // 21.2.5.12 get RegExp.prototype.sticky()
+  // 21.2.5.15 get RegExp.prototype.unicode()
+  forEach.call(array('sticky,unicode'), function(key){
+    key in /./ || defineProperty(RegExpProto, key, DESC ? {
+      configurable: true,
+      get: assertRegExpWrapper(function(){
+        return false;
+      })
+    } : descriptor(5, false));
+  });
+  
+  setSpecies(RegExp);
+}(RegExp[PROTOTYPE], RegExp);
+
+/******************************************************************************
+ * Module : web.immediate                                                     *
  ******************************************************************************/
 
 // setImmediate shim
@@ -1182,7 +1299,7 @@ isFunction(setImmediate) && isFunction(clearImmediate) || function(ONREADYSTATEC
   // Rest old browsers
   } else {
     defer = function(id){
-      setTimeout(part.call(run, id), 0);
+      setTimeout(run, 0, id);
     }
   }
 }('onreadystatechange');
@@ -1192,7 +1309,7 @@ $define(GLOBAL + BIND, {
 });
 
 /******************************************************************************
- * Module : es6_promise                                                       *
+ * Module : es6.promise                                                       *
  ******************************************************************************/
 
 // ES6 promises shim
@@ -1343,7 +1460,7 @@ $define(GLOBAL + BIND, {
 }(global[PROMISE]);
 
 /******************************************************************************
- * Module : es6_collections                                                   *
+ * Module : es6.collections                                                   *
  ******************************************************************************/
 
 // ECMAScript 6 collections shim
@@ -1439,7 +1556,8 @@ $define(GLOBAL + BIND, {
       // get next entry
       if(!iter.o || !(iter.l = entry = entry ? entry.n : iter.o[FIRST])){
         // or finish the iteration
-        return iter.o = undefined, iterResult(1);
+        iter.o = undefined;
+        return iterResult(1);
       }
       // return step by kind
       if(kind == KEY)  return iterResult(0, entry.k);
@@ -1501,7 +1619,7 @@ $define(GLOBAL + BIND, {
     clear: function(){
       for(var that = this, data = that[O1], entry = that[FIRST]; entry; entry = entry.n){
         entry.r = true;
-        entry.p = entry.n = undefined;
+        if(entry.p)entry.p = entry.p.n = undefined;
         delete data[entry.i];
       }
       that[FIRST] = that[LAST] = undefined;
@@ -1607,7 +1725,7 @@ $define(GLOBAL + BIND, {
   }, weakMethods, true, true);
   
   // IE11 WeakMap frozen keys fix
-  if(framework && DESC && new WeakMap([[Object.freeze(tmp), 7]]).get(tmp) != 7){
+  if(framework && new WeakMap().set(Object.freeze(tmp), 7).get(tmp) != 7){
     forEach.call(array('delete,has,get,set'), function(key){
       var method = WeakMap[PROTOTYPE][key];
       WeakMap[PROTOTYPE][key] = function(a, b){
@@ -1631,7 +1749,7 @@ $define(GLOBAL + BIND, {
 }();
 
 /******************************************************************************
- * Module : es6_reflect                                                       *
+ * Module : es6.reflect                                                       *
  ******************************************************************************/
 
 !function(){
@@ -1664,20 +1782,34 @@ $define(GLOBAL + BIND, {
   function reflectGet(target, propertyKey/*, receiver*/){
     var receiver = arguments.length < 3 ? target : arguments[2]
       , desc = getOwnDescriptor(assertObject(target), propertyKey), proto;
-    if(desc)return desc.get ? desc.get.call(receiver) : desc.value;
-    return isObject(proto = getPrototypeOf(target)) ? reflectGet(proto, propertyKey, receiver) : undefined;
+    if(desc)return has(desc, 'value')
+      ? desc.value
+      : desc.get === undefined
+        ? undefined
+        : desc.get.call(receiver);
+    return isObject(proto = getPrototypeOf(target))
+      ? reflectGet(proto, propertyKey, receiver)
+      : undefined;
   }
   function reflectSet(target, propertyKey, V/*, receiver*/){
     var receiver = arguments.length < 4 ? target : arguments[3]
-      , desc = getOwnDescriptor(assertObject(target), propertyKey), proto;
-    if(desc){
-      if(desc.writable === false)return false;
-      if(desc.set)return desc.set.call(receiver, V), true;
+      , ownDesc  = getOwnDescriptor(assertObject(target), propertyKey)
+      , existingDescriptor, proto;
+    if(!ownDesc){
+      if(isObject(proto = getPrototypeOf(target))){
+        return reflectSet(proto, propertyKey, V, receiver);
+      }
+      ownDesc = descriptor(0);
     }
-    if(isObject(proto = getPrototypeOf(target)))return reflectSet(proto, propertyKey, V, receiver);
-    desc = getOwnDescriptor(receiver, propertyKey) || descriptor(0);
-    desc.value = V;
-    return defineProperty(receiver, propertyKey, desc), true;
+    if(has(ownDesc, 'value')){
+      if(ownDesc.writable === false || !isObject(receiver))return false;
+      existingDescriptor = getOwnDescriptor(receiver, propertyKey) || descriptor(0);
+      existingDescriptor.value = V;
+      return defineProperty(receiver, propertyKey, existingDescriptor), true;
+    }
+    return ownDesc.set === undefined
+      ? false
+      : (ownDesc.set.call(receiver, V), true);
   }
   var isExtensible = Object.isExtensible || returnIt;
   
@@ -1732,7 +1864,7 @@ $define(GLOBAL + BIND, {
 }();
 
 /******************************************************************************
- * Module : es7                                                               *
+ * Module : es7.proposals                                                     *
  ******************************************************************************/
 
 !function(){
@@ -1770,7 +1902,7 @@ $define(GLOBAL + BIND, {
 }();
 
 /******************************************************************************
- * Module : es7_refs                                                          *
+ * Module : es7.abstract-refs                                                 *
  ******************************************************************************/
 
 // https://github.com/zenparsing/es-abstract-refs
@@ -1800,18 +1932,7 @@ $define(GLOBAL + BIND, {
 }('reference');
 
 /******************************************************************************
- * Module : dom_itarable                                                      *
- ******************************************************************************/
-
-!function(NodeList){
-  if(framework && NodeList && !(SYMBOL_ITERATOR in NodeList[PROTOTYPE])){
-    hidden(NodeList[PROTOTYPE], SYMBOL_ITERATOR, Iterators[ARRAY]);
-  }
-  Iterators.NodeList = Iterators[ARRAY];
-}(global.NodeList);
-
-/******************************************************************************
- * Module : array_statics                                                     *
+ * Module : js.array.statics                                                  *
  ******************************************************************************/
 
 // JavaScript 1.6 / Strawman array statics shim
@@ -1827,6 +1948,17 @@ $define(GLOBAL + BIND, {
                   'reduce,reduceRight,copyWithin,fill,turn');
   $define(STATIC, ARRAY, arrayStatics);
 }({});
+
+/******************************************************************************
+ * Module : web.dom.itarable                                                  *
+ ******************************************************************************/
+
+!function(NodeList){
+  if(framework && NodeList && !(SYMBOL_ITERATOR in NodeList[PROTOTYPE])){
+    hidden(NodeList[PROTOTYPE], SYMBOL_ITERATOR, Iterators[ARRAY]);
+  }
+  Iterators.NodeList = Iterators[ARRAY];
+}(global.NodeList);
 }(typeof self != 'undefined' && self.Math === Math ? self : Function('return this')(), true);
 },{}],6:[function(require,module,exports){
 (function (global){
@@ -1865,8 +1997,8 @@ $define(GLOBAL + BIND, {
   // module.exports (if we're in a module) or a new, empty object.
   runtime = global.regeneratorRuntime = inModule ? module.exports : {};
 
-  function wrap(innerFn, outerFn, self, tryList) {
-    return new Generator(innerFn, outerFn, self || null, tryList || []);
+  function wrap(innerFn, outerFn, self, tryLocsList) {
+    return new Generator(innerFn, outerFn, self || null, tryLocsList || []);
   }
   runtime.wrap = wrap;
 
@@ -1925,9 +2057,9 @@ $define(GLOBAL + BIND, {
     return genFun;
   };
 
-  runtime.async = function(innerFn, outerFn, self, tryList) {
+  runtime.async = function(innerFn, outerFn, self, tryLocsList) {
     return new Promise(function(resolve, reject) {
-      var generator = wrap(innerFn, outerFn, self, tryList);
+      var generator = wrap(innerFn, outerFn, self, tryLocsList);
       var callNext = step.bind(generator.next);
       var callThrow = step.bind(generator["throw"]);
 
@@ -1950,9 +2082,9 @@ $define(GLOBAL + BIND, {
     });
   };
 
-  function Generator(innerFn, outerFn, self, tryList) {
+  function Generator(innerFn, outerFn, self, tryLocsList) {
     var generator = outerFn ? Object.create(outerFn.prototype) : this;
-    var context = new Context(tryList);
+    var context = new Context(tryLocsList);
     var state = GenStateSuspendedStart;
 
     function invoke(method, arg) {
@@ -2088,33 +2220,34 @@ $define(GLOBAL + BIND, {
     return "[object Generator]";
   };
 
-  function pushTryEntry(triple) {
-    var entry = { tryLoc: triple[0] };
+  function pushTryEntry(locs) {
+    var entry = { tryLoc: locs[0] };
 
-    if (1 in triple) {
-      entry.catchLoc = triple[1];
+    if (1 in locs) {
+      entry.catchLoc = locs[1];
     }
 
-    if (2 in triple) {
-      entry.finallyLoc = triple[2];
+    if (2 in locs) {
+      entry.finallyLoc = locs[2];
+      entry.afterLoc = locs[3];
     }
 
     this.tryEntries.push(entry);
   }
 
-  function resetTryEntry(entry, i) {
+  function resetTryEntry(entry) {
     var record = entry.completion || {};
-    record.type = i === 0 ? "normal" : "return";
+    record.type = "normal";
     delete record.arg;
     entry.completion = record;
   }
 
-  function Context(tryList) {
+  function Context(tryLocsList) {
     // The root entry object (effectively a try statement without a catch
     // or a finally block) gives us a place to store values thrown from
     // locations where there is no enclosing try statement.
     this.tryEntries = [{ tryLoc: "root" }];
-    tryList.forEach(pushTryEntry, this);
+    tryLocsList.forEach(pushTryEntry, this);
     this.reset();
   }
 
@@ -2298,7 +2431,7 @@ $define(GLOBAL + BIND, {
       return ContinueSentinel;
     },
 
-    complete: function(record) {
+    complete: function(record, afterLoc) {
       if (record.type === "throw") {
         throw record.arg;
       }
@@ -2309,6 +2442,8 @@ $define(GLOBAL + BIND, {
       } else if (record.type === "return") {
         this.rval = record.arg;
         this.next = "end";
+      } else if (record.type === "normal" && afterLoc) {
+        this.next = afterLoc;
       }
 
       return ContinueSentinel;
@@ -2316,7 +2451,7 @@ $define(GLOBAL + BIND, {
 
     finish: function(finallyLoc) {
       var entry = this._findFinallyEntry(finallyLoc);
-      return this.complete(entry.completion);
+      return this.complete(entry.completion, entry.afterLoc);
     },
 
     "catch": function(tryLoc) {
@@ -2326,7 +2461,7 @@ $define(GLOBAL + BIND, {
           var record = entry.completion;
           if (record.type === "throw") {
             var thrown = record.arg;
-            resetTryEntry(entry, i);
+            resetTryEntry(entry);
           }
           return thrown;
         }

@@ -9,4 +9,11 @@ gulp.task('copy-fonts', ['clean'], function() {
   ]).pipe(gulp.dest(config.dist + '/fonts'));
 });
 
-gulp.task('copy', ['copy-fonts']);
+gulp.task('copy-index', ['clean'], function() {
+  gulp.src([
+    config.src + '/index.html'
+  ]).pipe(gulp.dest(config.dist));
+});
+
+
+gulp.task('copy', ['copy-fonts', 'copy-index']);
