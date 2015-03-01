@@ -15,5 +15,12 @@ gulp.task('copy-index', ['clean'], function() {
   ]).pipe(gulp.dest(config.dist));
 });
 
+gulp.task('copy-images', ['clean'], function () {
+  gulp.src([
+    config.src + '/images/*.{jpg,png}'
+  ])
+  .pipe(gulp.dest(config.dist + '/images'));
+});
 
-gulp.task('copy', ['copy-fonts', 'copy-index']);
+
+gulp.task('copy', ['copy-fonts', 'copy-index', 'copy-images']);
