@@ -1,6 +1,7 @@
 var gulp = require('gulp'),
     browserify = require('browserify'),
     to5ify = require('6to5ify'),
+    reactify = require('reactify'),
     config = require('../config'),
     source = require('vinyl-source-stream'),
     buffer = require('vinyl-buffer'),
@@ -8,13 +9,11 @@ var gulp = require('gulp'),
     rename = require('gulp-rename');
 
 gulp.task('browserify', ['6to5'], function() {
-  return browserify('./' + config.main)
+  return browserify('./src/scripts/app.js')
+      .transform(reactify)
       .transform(to5ify)
       .bundle()
-      .pipe(source(config.main))
+      .pipe(source('src/scripts/app.js'))
       .pipe(buffer())
-      .pipe(gulp.dest(config.dist))
-      .pipe(rename({suffix: '.min'}))
-      .pipe(uglify())
       .pipe(gulp.dest(config.dist));
 });

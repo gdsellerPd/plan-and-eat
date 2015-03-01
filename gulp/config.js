@@ -9,7 +9,6 @@ module.exports = {
   serverport: serverport,
   src: src,
   lib: lib,
-  main: 'mylibrary.js',
   dist: dist,
   watch: {
     paths: ['js', 'scss', 'html'].reduce(function(paths, ext) {
