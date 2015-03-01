@@ -8,7 +8,7 @@ var gulp = require('gulp'),
     uglify = require('gulp-uglify'),
     rename = require('gulp-rename');
 
-gulp.task('browserify', ['6to5'], function() {
+gulp.task('browserify', function() {
   return browserify('./src/scripts/app.js')
       .transform(reactify)
       .transform(to5ify)
