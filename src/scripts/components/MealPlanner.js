@@ -1,12 +1,13 @@
 import React from 'react';
 import ChoiceList from './ChoiceList';
+import ChoiceFilter from './ChoiceFilter';
 import ChoiceStore from '../stores/ChoiceStore';
 
 class MealPlanner extends React.Component {
 
   get state() {
     return {
-      allChoices: ChoiceStore.getAll()
+      allChoices: ChoiceStore.getChoices()
     }
   }
 
@@ -94,15 +95,7 @@ class MealPlanner extends React.Component {
         </li>
       </ul>
 
-      <form className="form-inline">
-        <div className="form-group">
-          <div className="input-group">
-            <label for="choice_search" className="input-group-addon">Search</label>
-            <input type="text" id="choice_search" />
-          </div>
-        </div>
-      </form>
-
+      <ChoiceFilter />
       <ChoiceList allChoices={this.state.allChoices} />
 
     </div>

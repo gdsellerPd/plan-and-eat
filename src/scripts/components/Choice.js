@@ -7,7 +7,6 @@ class Choice extends React.Component {
   }
 
   render() {
-    console.log(this.props.item);
     return <div className="col-xs-3 choice">
       <img className="choice-image" src={this.props.item.picUrl} />
       <p className="choice-description">
