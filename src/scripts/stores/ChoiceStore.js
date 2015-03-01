@@ -6,17 +6,20 @@ import _ from 'lodash';
 
 class ChoiceStore extends EventEmitter {
 
-  getChoices() {
+  getFiltered() {
     let options = data.mealOptions;
+    let pattern = new RegExp(this.search, 'i');
+    let names = options.filter((choice) => pattern.test(choice.name));
+    let tags = options.filter((choice) => _.some(choice.tags, (tag) => pattern.test(tag)));
+    return _.uniq(names.concat(tags));
+  }
 
+  getChoices() {
     if (this.search) {
-      let pattern = new RegExp(this.search, 'i');
-      let names = options.filter((choice) => pattern.test(choice.name));
-      let tags = options.filter((choice) => _.some(choice.tags, (tag) => pattern.test(tag)));
-      return _.uniq(names.concat(tags));
+      return this.getFiltered();
     }
 
-    return options;
+    return data.mealOptions;
   }
 
   filter(search) {
