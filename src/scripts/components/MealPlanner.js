@@ -1,6 +1,15 @@
 import React from 'react';
+import ChoiceList from './ChoiceList';
+import ChoiceStore from '../stores/ChoiceStore';
 
 class MealPlanner extends React.Component {
+
+  get state() {
+    return {
+      allChoices: ChoiceStore.getAll()
+    }
+  }
+
   render() {
     return <div classNameName="container">
       <header>
@@ -94,70 +103,9 @@ class MealPlanner extends React.Component {
         </div>
       </form>
 
-      <div className="choices container">
-        <h2>Meal Options</h2>
-        <div className="row">
-          <div className="col-xs-3 choice">
-            <img className="choice-image" src="/images/BeefWellington.jpg" />
-            <p className="choice-description">
-              Beef Wellington
-            </p>
-          </div>
-          <div className="col-xs-3 choice">
-            <img className="choice-image" src="/images/ChickenSatay.jpg" />
-            <p className="choice-description">
-              Chicken Satay
-            </p>
-          </div>
-          <div className="col-xs-3 choice">
-            <img className="choice-image" src="/images/DoubleDown.jpg" />
-            <p className="choice-description">
-              Double Down
-            </p>
-          </div>
-          <div className="col-xs-3 choice">
-            <img className="choice-image" src="/images/Hamburger.jpg" />
-            <p className="choice-description">
-              Hamburger
-            </p>
-          </div>
-        </div>
-        <div className="row">
-          <div className="col-xs-3 choice">
-            <img className="choice-image" src="/images/MapleGlazedSalmon.jpg" />
-            <p className="choice-description">
-              Maple Glazed Salmon
-            </p>
-          </div>
-          <div className="col-xs-3 choice">
-            <img className="choice-image" src="/images/NewYorkStrip.jpg" />
-            <p className="choice-description">
-              New York Strip
-            </p>
-          </div>
-          <div className="col-xs-3 choice">
-            <img className="choice-image" src="/images/StirFryChicken.jpg" />
-            <p className="choice-description">
-              Stir Fry Chicken
-            </p>
-          </div>
-          <div className="col-xs-3 choice">
-            <img className="choice-image" src="/images/SummerSalad.jpg" />
-            <p className="choice-description">
-              Summer Salad
-            </p>
-          </div>
-        </div>
-        <div className="row">
-          <div className="col-xs-3 choice">
-            <img className="choice-image" src="/images/ThymeSalmon.jpg" />
-            <p className="choice-description">
-              Thyme Salad
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>;
+      <ChoiceList allChoices={this.state.allChoices} />
+
+    </div>
   }
 }
 
