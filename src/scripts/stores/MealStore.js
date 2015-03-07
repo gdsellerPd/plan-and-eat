@@ -12,6 +12,20 @@ class MealStore extends EventEmitter {
       ['Fri', null],
       ['Sat', null]
     ]);
+
+    this.set('Wed', {
+      "name"   : "Satay Chicken",
+      "url"    : "https://www.flickr.com/photos/mat-packer/9312677768",
+      "picUrl" : "images/ChickenSatay.jpg",
+      "tags"   : ["chicken", "asian"]
+    });
+
+    this.set('Fri', {
+      "name"   : "Satay Chicken",
+      "url"    : "https://www.flickr.com/photos/mat-packer/9312677768",
+      "picUrl" : "images/ChickenSatay.jpg",
+      "tags"   : ["chicken", "asian"]
+    });
   }
 
   set(day, meal) {

@@ -1,3 +1,5 @@
+require('6to5ify/polyfill');
+
 import React from 'react'
 import MealPlanner from './components/MealPlanner';
 
