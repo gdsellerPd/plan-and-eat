@@ -10,7 +10,7 @@ var MealPlanner = _interopRequire(require("./components/MealPlanner"));
 React.render(React.createElement(MealPlanner, null), document.getElementById("mealplanner"));
 
 
-},{"./components/MealPlanner":168,"react":162}],2:[function(require,module,exports){
+},{"./components/MealPlanner":169,"react":162}],2:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -31696,7 +31696,7 @@ var ChoiceActions = {
 module.exports = ChoiceActions;
 
 
-},{"../constants/ChoiceConstants":169,"../dispatcher/AppDispatcher":171}],164:[function(require,module,exports){
+},{"../constants/ChoiceConstants":170,"../dispatcher/AppDispatcher":172}],164:[function(require,module,exports){
 "use strict";
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
@@ -31914,6 +31914,48 @@ var _classCallCheck = function (instance, Constructor) { if (!(instance instance
 
 var React = _interopRequire(require("react"));
 
+var MealList = (function (_React$Component) {
+  function MealList() {
+    _classCallCheck(this, MealList);
+
+    if (_React$Component != null) {
+      _React$Component.apply(this, arguments);
+    }
+  }
+
+  _inherits(MealList, _React$Component);
+
+  _prototypeProperties(MealList, null, {
+    render: {
+      value: function render() {
+        return React.createElement("ul", { className: "meal-list" }, React.createElement("li", { className: "meal" }, React.createElement("div", { className: "meal-container" }, React.createElement("div", { className: "meal-selection" })), React.createElement("p", { className: "meal-day text-center" }, "Sun")), React.createElement("li", { className: "meal" }, React.createElement("div", { className: "meal-container" }, React.createElement("div", { className: "meal-selection" })), React.createElement("p", { className: "meal-day text-center" }, "Mon")), React.createElement("li", { className: "meal" }, React.createElement("div", { className: "meal-container" }, React.createElement("div", { className: "meal-selection" })), React.createElement("p", { className: "meal-day text-center" }, "Tue")), React.createElement("li", { className: "meal meal-selected" }, React.createElement("div", { className: "meal-container" }, React.createElement("div", { className: "meal-selection" })), React.createElement("p", { className: "meal-day text-center" }, "Wed"), React.createElement("p", { className: "meal-text" }, "Stir Fry Chicken")), React.createElement("li", { className: "meal" }, React.createElement("div", { className: "meal-container" }, React.createElement("div", { className: "meal-selection" })), React.createElement("p", { className: "meal-day text-center" }, "Thu")), React.createElement("li", { className: "meal meal-selected" }, React.createElement("div", { className: "meal-container" }, React.createElement("div", { className: "meal-selection" })), React.createElement("p", { className: "meal-day text-center" }, "Fri"), React.createElement("p", { className: "meal-text" }, "Stir Fry Chicken")), React.createElement("li", { className: "meal" }, React.createElement("div", { className: "meal-container" }, React.createElement("div", { className: "meal-selection" })), React.createElement("p", { className: "meal-day text-center" }, "Sat")));
+      },
+      writable: true,
+      configurable: true
+    }
+  });
+
+  return MealList;
+})(React.Component);
+
+module.exports = MealList;
+
+
+},{"react":162}],169:[function(require,module,exports){
+"use strict";
+
+var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
+
+var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
+
+var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
+
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+
+var React = _interopRequire(require("react"));
+
+var MealList = _interopRequire(require("./MealList"));
+
 var ChoiceList = _interopRequire(require("./ChoiceList"));
 
 var ChoiceFilter = _interopRequire(require("./ChoiceFilter"));
@@ -31945,7 +31987,7 @@ var MealPlanner = (function (_React$Component) {
     },
     render: {
       value: function render() {
-        return React.createElement("div", { classNameName: "container" }, React.createElement("header", null, React.createElement("h1", { className: "text-center" }, "Plan & Eat")), React.createElement("ul", { className: "meal-list" }, React.createElement("li", { className: "meal" }, React.createElement("div", { className: "meal-container" }, React.createElement("div", { className: "meal-selection" })), React.createElement("p", { className: "meal-day text-center" }, "Sun")), React.createElement("li", { className: "meal" }, React.createElement("div", { className: "meal-container" }, React.createElement("div", { className: "meal-selection" })), React.createElement("p", { className: "meal-day text-center" }, "Mon")), React.createElement("li", { className: "meal" }, React.createElement("div", { className: "meal-container" }, React.createElement("div", { className: "meal-selection" })), React.createElement("p", { className: "meal-day text-center" }, "Tue")), React.createElement("li", { className: "meal meal-selected" }, React.createElement("div", { className: "meal-container" }, React.createElement("div", { className: "meal-selection" })), React.createElement("p", { className: "meal-day text-center" }, "Wed"), React.createElement("p", { className: "meal-text" }, "Stir Fry Chicken")), React.createElement("li", { className: "meal" }, React.createElement("div", { className: "meal-container" }, React.createElement("div", { className: "meal-selection" })), React.createElement("p", { className: "meal-day text-center" }, "Thu")), React.createElement("li", { className: "meal meal-selected" }, React.createElement("div", { className: "meal-container" }, React.createElement("div", { className: "meal-selection" })), React.createElement("p", { className: "meal-day text-center" }, "Fri"), React.createElement("p", { className: "meal-text" }, "Stir Fry Chicken")), React.createElement("li", { className: "meal" }, React.createElement("div", { className: "meal-container" }, React.createElement("div", { className: "meal-selection" })), React.createElement("p", { className: "meal-day text-center" }, "Sat"))), React.createElement(ChoiceFilter, null), React.createElement(ChoiceList, { allChoices: this.state.allChoices }));
+        return React.createElement("div", { classNameName: "container" }, React.createElement("header", null, React.createElement("h1", { className: "text-center" }, "Plan & Eat")), React.createElement(MealList, null), React.createElement(ChoiceFilter, null), React.createElement(ChoiceList, { allChoices: this.state.allChoices }));
       },
       writable: true,
       configurable: true
@@ -31965,7 +32007,7 @@ var MealPlanner = (function (_React$Component) {
 module.exports = MealPlanner;
 
 
-},{"../stores/ChoiceStore":172,"./ChoiceFilter":165,"./ChoiceList":166,"react":162}],169:[function(require,module,exports){
+},{"../stores/ChoiceStore":173,"./ChoiceFilter":165,"./ChoiceList":166,"./MealList":168,"react":162}],170:[function(require,module,exports){
 "use strict";
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
@@ -31977,7 +32019,7 @@ module.exports = keymirror({
 });
 
 
-},{"react/lib/keyMirror":147}],170:[function(require,module,exports){
+},{"react/lib/keyMirror":147}],171:[function(require,module,exports){
 module.exports={
   "mealTimes": [{ "name": "Sun" }, { "name": "Mon" }, { "name": "Tue" }, { "name": "Wed" },
               { "name": "Thu" }, { "name": "Fri" }, { "name": "Sat" } ],
@@ -32039,14 +32081,14 @@ module.exports={
     }]
 }
 
-},{}],171:[function(require,module,exports){
+},{}],172:[function(require,module,exports){
 "use strict";
 
 var Dispatcher = require("flux").Dispatcher;
 module.exports = new Dispatcher();
 
 
-},{"flux":4}],172:[function(require,module,exports){
+},{"flux":4}],173:[function(require,module,exports){
 "use strict";
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
@@ -32143,4 +32185,4 @@ AppDispatcher.register(function (action) {
 module.exports = store;
 
 
-},{"../constants/ChoiceConstants":169,"../data.json":170,"../dispatcher/AppDispatcher":171,"events":2,"lodash":7}]},{},[1]);
+},{"../constants/ChoiceConstants":170,"../data.json":171,"../dispatcher/AppDispatcher":172,"events":2,"lodash":7}]},{},[1]);
