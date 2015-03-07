@@ -4,6 +4,8 @@ import data from '../data.json'
 import ChoiceConstants from '../constants/ChoiceConstants';
 import _ from 'lodash';
 
+const CHANGE_EVENT = 'choice.filter';
+
 class ChoiceStore extends EventEmitter {
 
   getFiltered() {
@@ -12,6 +14,10 @@ class ChoiceStore extends EventEmitter {
     let names = options.filter((choice) => pattern.test(choice.name));
     let tags = options.filter((choice) => _.some(choice.tags, (tag) => pattern.test(tag)));
     return _.uniq(names.concat(tags));
+  }
+
+  addChangeListener(fn) {
+    this.on(CHANGE_EVENT, fn);
   }
 
   getChoices() {
@@ -27,14 +33,17 @@ class ChoiceStore extends EventEmitter {
   }
 }
 
+const store = new ChoiceStore();
+
 AppDispatcher.register(function (action) {
   switch(action.actionType) {
     case ChoiceConstants.CHOICE_FILTER:
-      store.filter(action.search)
+      store.filter(action.search);
+      store.emit(CHANGE_EVENT);
       break;
     default:
       break;
   }
 });
 
-export default new ChoiceStore();
+export default store;

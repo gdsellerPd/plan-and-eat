@@ -3,12 +3,20 @@ import ChoiceList from './ChoiceList';
 import ChoiceFilter from './ChoiceFilter';
 import ChoiceStore from '../stores/ChoiceStore';
 
+let getState = () => {
+  return { 
+    allChoices: ChoiceStore.getChoices()
+  }
+}
+
 class MealPlanner extends React.Component {
 
-  get state() {
-    return {
-      allChoices: ChoiceStore.getChoices()
-    }
+  constructor() {
+    this.state = getState();
+  }
+
+  componentWillMount() {
+    ChoiceStore.addChangeListener(this._onChange.bind(this));
   }
 
   render() {
@@ -99,6 +107,10 @@ class MealPlanner extends React.Component {
       <ChoiceList allChoices={this.state.allChoices} />
 
     </div>
+  }
+
+  _onChange() {
+    this.setState(getState());
   }
 }
 

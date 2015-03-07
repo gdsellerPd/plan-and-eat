@@ -10,7 +10,7 @@ var MealPlanner = _interopRequire(require("./components/MealPlanner"));
 React.render(React.createElement(MealPlanner, null), document.getElementById("mealplanner"));
 
 
-},{"./components/MealPlanner":167,"react":162}],2:[function(require,module,exports){
+},{"./components/MealPlanner":168,"react":162}],2:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -31680,6 +31680,27 @@ module.exports = require('./lib/React');
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
 
+var AppDispatcher = _interopRequire(require("../dispatcher/AppDispatcher"));
+
+var ChoiceConstants = _interopRequire(require("../constants/ChoiceConstants"));
+
+var ChoiceActions = {
+  filter: function (search) {
+    AppDispatcher.dispatch({
+      actionType: ChoiceConstants.CHOICE_FILTER,
+      search: search
+    });
+  }
+};
+
+module.exports = ChoiceActions;
+
+
+},{"../constants/ChoiceConstants":169,"../dispatcher/AppDispatcher":171}],164:[function(require,module,exports){
+"use strict";
+
+var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
+
 var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
 var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
@@ -31721,7 +31742,7 @@ var Choice = (function (_React$Component) {
 module.exports = Choice;
 
 
-},{"react":162}],164:[function(require,module,exports){
+},{"react":162}],165:[function(require,module,exports){
 "use strict";
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
@@ -31733,6 +31754,8 @@ var _inherits = function (subClass, superClass) { if (typeof superClass !== "fun
 var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
 var React = _interopRequire(require("react"));
+
+var ChoiceActions = _interopRequire(require("../actions/ChoiceActions"));
 
 var ChoiceFilter = (function (_React$Component) {
   function ChoiceFilter() {
@@ -31748,7 +31771,14 @@ var ChoiceFilter = (function (_React$Component) {
   _prototypeProperties(ChoiceFilter, null, {
     render: {
       value: function render() {
-        return React.createElement("form", { className: "form-inline" }, React.createElement("div", { className: "form-group" }, React.createElement("div", { className: "input-group" }, React.createElement("label", { "for": "choice_search", className: "input-group-addon" }, "Search"), React.createElement("input", { type: "text", id: "choice_search" }))));
+        return React.createElement("form", { className: "form-inline" }, React.createElement("div", { className: "form-group" }, React.createElement("div", { className: "input-group" }, React.createElement("label", { "for": "choice_search", className: "input-group-addon" }, "Search"), React.createElement("input", { type: "text", id: "choice_search", onChange: this._onChange }))));
+      },
+      writable: true,
+      configurable: true
+    },
+    _onChange: {
+      value: function _onChange(event) {
+        ChoiceActions.filter(event.target.value);
       },
       writable: true,
       configurable: true
@@ -31761,7 +31791,7 @@ var ChoiceFilter = (function (_React$Component) {
 module.exports = ChoiceFilter;
 
 
-},{"react":162}],165:[function(require,module,exports){
+},{"../actions/ChoiceActions":163,"react":162}],166:[function(require,module,exports){
 "use strict";
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
@@ -31818,7 +31848,7 @@ var ChoiceList = (function (_React$Component) {
 module.exports = ChoiceList;
 
 
-},{"./ChoiceRow":166,"lodash":7,"react":162}],166:[function(require,module,exports){
+},{"./ChoiceRow":167,"lodash":7,"react":162}],167:[function(require,module,exports){
 "use strict";
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
@@ -31871,7 +31901,7 @@ var ChoiceRow = (function (_React$Component) {
 module.exports = ChoiceRow;
 
 
-},{"./Choice":163,"react":162}],167:[function(require,module,exports){
+},{"./Choice":164,"react":162}],168:[function(require,module,exports){
 "use strict";
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
@@ -31890,29 +31920,39 @@ var ChoiceFilter = _interopRequire(require("./ChoiceFilter"));
 
 var ChoiceStore = _interopRequire(require("../stores/ChoiceStore"));
 
+var getState = function () {
+  return {
+    allChoices: ChoiceStore.getChoices()
+  };
+};
+
 var MealPlanner = (function (_React$Component) {
   function MealPlanner() {
     _classCallCheck(this, MealPlanner);
 
-    if (_React$Component != null) {
-      _React$Component.apply(this, arguments);
-    }
+    this.state = getState();
   }
 
   _inherits(MealPlanner, _React$Component);
 
   _prototypeProperties(MealPlanner, null, {
-    state: {
-      get: function () {
-        return {
-          allChoices: ChoiceStore.getChoices()
-        };
+    componentWillMount: {
+      value: function componentWillMount() {
+        ChoiceStore.addChangeListener(this._onChange.bind(this));
       },
+      writable: true,
       configurable: true
     },
     render: {
       value: function render() {
         return React.createElement("div", { classNameName: "container" }, React.createElement("header", null, React.createElement("h1", { className: "text-center" }, "Plan & Eat")), React.createElement("ul", { className: "meal-list" }, React.createElement("li", { className: "meal" }, React.createElement("div", { className: "meal-container" }, React.createElement("div", { className: "meal-selection" })), React.createElement("p", { className: "meal-day text-center" }, "Sun")), React.createElement("li", { className: "meal" }, React.createElement("div", { className: "meal-container" }, React.createElement("div", { className: "meal-selection" })), React.createElement("p", { className: "meal-day text-center" }, "Mon")), React.createElement("li", { className: "meal" }, React.createElement("div", { className: "meal-container" }, React.createElement("div", { className: "meal-selection" })), React.createElement("p", { className: "meal-day text-center" }, "Tue")), React.createElement("li", { className: "meal meal-selected" }, React.createElement("div", { className: "meal-container" }, React.createElement("div", { className: "meal-selection" })), React.createElement("p", { className: "meal-day text-center" }, "Wed"), React.createElement("p", { className: "meal-text" }, "Stir Fry Chicken")), React.createElement("li", { className: "meal" }, React.createElement("div", { className: "meal-container" }, React.createElement("div", { className: "meal-selection" })), React.createElement("p", { className: "meal-day text-center" }, "Thu")), React.createElement("li", { className: "meal meal-selected" }, React.createElement("div", { className: "meal-container" }, React.createElement("div", { className: "meal-selection" })), React.createElement("p", { className: "meal-day text-center" }, "Fri"), React.createElement("p", { className: "meal-text" }, "Stir Fry Chicken")), React.createElement("li", { className: "meal" }, React.createElement("div", { className: "meal-container" }, React.createElement("div", { className: "meal-selection" })), React.createElement("p", { className: "meal-day text-center" }, "Sat"))), React.createElement(ChoiceFilter, null), React.createElement(ChoiceList, { allChoices: this.state.allChoices }));
+      },
+      writable: true,
+      configurable: true
+    },
+    _onChange: {
+      value: function _onChange() {
+        this.setState(getState());
       },
       writable: true,
       configurable: true
@@ -31925,7 +31965,7 @@ var MealPlanner = (function (_React$Component) {
 module.exports = MealPlanner;
 
 
-},{"../stores/ChoiceStore":171,"./ChoiceFilter":164,"./ChoiceList":165,"react":162}],168:[function(require,module,exports){
+},{"../stores/ChoiceStore":172,"./ChoiceFilter":165,"./ChoiceList":166,"react":162}],169:[function(require,module,exports){
 "use strict";
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
@@ -31937,7 +31977,7 @@ module.exports = keymirror({
 });
 
 
-},{"react/lib/keyMirror":147}],169:[function(require,module,exports){
+},{"react/lib/keyMirror":147}],170:[function(require,module,exports){
 module.exports={
   "mealTimes": [{ "name": "Sun" }, { "name": "Mon" }, { "name": "Tue" }, { "name": "Wed" },
               { "name": "Thu" }, { "name": "Fri" }, { "name": "Sat" } ],
@@ -31999,14 +32039,14 @@ module.exports={
     }]
 }
 
-},{}],170:[function(require,module,exports){
+},{}],171:[function(require,module,exports){
 "use strict";
 
 var Dispatcher = require("flux").Dispatcher;
 module.exports = new Dispatcher();
 
 
-},{"flux":4}],171:[function(require,module,exports){
+},{"flux":4}],172:[function(require,module,exports){
 "use strict";
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
@@ -32026,6 +32066,8 @@ var ChoiceConstants = _interopRequire(require("../constants/ChoiceConstants"));
 
 var _ = _interopRequire(require("lodash"));
 
+var CHANGE_EVENT = "choice.filter";
+
 var ChoiceStore = (function (EventEmitter) {
   function ChoiceStore() {
     _classCallCheck(this, ChoiceStore);
@@ -32038,33 +32080,37 @@ var ChoiceStore = (function (EventEmitter) {
   _inherits(ChoiceStore, EventEmitter);
 
   _prototypeProperties(ChoiceStore, null, {
+    getFiltered: {
+      value: function getFiltered() {
+        var options = data.mealOptions;
+        var pattern = new RegExp(this.search, "i");
+        var names = options.filter(function (choice) {
+          return pattern.test(choice.name);
+        });
+        var tags = options.filter(function (choice) {
+          return _.some(choice.tags, function (tag) {
+            return pattern.test(tag);
+          });
+        });
+        return _.uniq(names.concat(tags));
+      },
+      writable: true,
+      configurable: true
+    },
+    addChangeListener: {
+      value: function addChangeListener(fn) {
+        this.on(CHANGE_EVENT, fn);
+      },
+      writable: true,
+      configurable: true
+    },
     getChoices: {
       value: function getChoices() {
-        var _this = this;
-        var options = data.mealOptions;
-
         if (this.search) {
-          var _ret = (function () {
-            var pattern = new RegExp(_this.search, "i");
-            var names = options.filter(function (choice) {
-              return pattern.test(choice.name);
-            });
-            var tags = options.filter(function (choice) {
-              return _.some(choice.tags, function (tag) {
-                return pattern.test(tag);
-              });
-            });
-            return {
-              v: _.uniq(names.concat(tags))
-            };
-          })();
-
-          if (typeof _ret === "object") {
-            return _ret.v;
-          }
+          return this.getFiltered();
         }
 
-        return options;
+        return data.mealOptions;
       },
       writable: true,
       configurable: true
@@ -32081,17 +32127,20 @@ var ChoiceStore = (function (EventEmitter) {
   return ChoiceStore;
 })(EventEmitter);
 
+var store = new ChoiceStore();
+
 AppDispatcher.register(function (action) {
   switch (action.actionType) {
     case ChoiceConstants.CHOICE_FILTER:
       store.filter(action.search);
+      store.emit(CHANGE_EVENT);
       break;
     default:
       break;
   }
 });
 
-module.exports = new ChoiceStore();
+module.exports = store;
 
 
-},{"../constants/ChoiceConstants":168,"../data.json":169,"../dispatcher/AppDispatcher":170,"events":2,"lodash":7}]},{},[1]);
+},{"../constants/ChoiceConstants":169,"../data.json":170,"../dispatcher/AppDispatcher":171,"events":2,"lodash":7}]},{},[1]);
