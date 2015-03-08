@@ -9,8 +9,7 @@ const Meal = React.createClass({
       register('choice', {
         dropTarget: {
           acceptDrop(component, item) {
-            console.log(component.props.day);
-            console.log(item);
+            component.props.selection = item;
           }
         }
       });
@@ -22,20 +21,34 @@ const Meal = React.createClass({
     selection: React.PropTypes.object.isRequired
   },
 
+  styles() {
+    const dropState = this.getDropState('choice');
+
+    let styles = {};
+
+    if (dropState.isHovering) {
+      styles.backgroundColor = '#FFD34E';
+    }
+
+    if (this.props.selection) {
+      styles.backgroundImage = 'url(' + this.props.selection.picUrl + ')';
+    }
+
+    return styles;
+  },
+
   render() {
     let mealText;
-    let styles = {};
     if (this.props.selection) {
       mealText = <p className="meal-text">
         {this.props.selection.name}
       </p>
-      styles.backgroundImage = 'url(' + this.props.selection.picUrl + ')';
     }
 
     return (
       <li {...this.dropTargetFor('choice')} className={this.props.selection ? 'meal meal-selected' : 'meal'}>
        <div className="meal-container">
-         <div style={styles} className="meal-selection">
+         <div style={this.styles()} className="meal-selection">
     
          </div>
        </div>

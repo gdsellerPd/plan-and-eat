@@ -36996,8 +36996,7 @@ var Meal = React.createClass({ displayName: "Meal",
       register("choice", {
         dropTarget: {
           acceptDrop: function acceptDrop(component, item) {
-            console.log(component.props.day);
-            console.log(item);
+            component.props.selection = item;
           }
         }
       });
@@ -37009,15 +37008,29 @@ var Meal = React.createClass({ displayName: "Meal",
     selection: React.PropTypes.object.isRequired
   },
 
-  render: function render() {
-    var mealText = undefined;
+  styles: function styles() {
+    var dropState = this.getDropState("choice");
+
     var styles = {};
+
+    if (dropState.isHovering) {
+      styles.backgroundColor = "#FFD34E";
+    }
+
     if (this.props.selection) {
-      mealText = React.createElement("p", { className: "meal-text" }, this.props.selection.name);
       styles.backgroundImage = "url(" + this.props.selection.picUrl + ")";
     }
 
-    return React.createElement("li", React.__spread({}, this.dropTargetFor("choice"), { className: this.props.selection ? "meal meal-selected" : "meal" }), React.createElement("div", { className: "meal-container" }, React.createElement("div", { style: styles, className: "meal-selection" })), React.createElement("p", { className: "meal-day text-center" }, this.props.day), mealText);
+    return styles;
+  },
+
+  render: function render() {
+    var mealText = undefined;
+    if (this.props.selection) {
+      mealText = React.createElement("p", { className: "meal-text" }, this.props.selection.name);
+    }
+
+    return React.createElement("li", React.__spread({}, this.dropTargetFor("choice"), { className: this.props.selection ? "meal meal-selected" : "meal" }), React.createElement("div", { className: "meal-container" }, React.createElement("div", { style: this.styles(), className: "meal-selection" })), React.createElement("p", { className: "meal-day text-center" }, this.props.day), mealText);
   }
 });
 
@@ -37343,20 +37356,6 @@ var MealStore = (function (EventEmitter) {
     _classCallCheck(this, MealStore);
 
     this.meals = new Map([["Sun", null], ["Mon", null], ["Tue", null], ["Wed", null], ["Thu", null], ["Fri", null], ["Sat", null]]);
-
-    this.set("Wed", {
-      name: "Satay Chicken",
-      url: "https://www.flickr.com/photos/mat-packer/9312677768",
-      picUrl: "images/ChickenSatay.jpg",
-      tags: ["chicken", "asian"]
-    });
-
-    this.set("Fri", {
-      name: "Satay Chicken",
-      url: "https://www.flickr.com/photos/mat-packer/9312677768",
-      picUrl: "images/ChickenSatay.jpg",
-      tags: ["chicken", "asian"]
-    });
   }
 
   _inherits(MealStore, EventEmitter);
