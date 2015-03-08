@@ -1,5 +1,6 @@
 import React from 'react';
 import { DragDropMixin } from 'react-dnd';
+import MealActions from '../actions/MealActions';
 
 const Meal = React.createClass({
   mixins: [DragDropMixin],
@@ -10,6 +11,7 @@ const Meal = React.createClass({
         dropTarget: {
           acceptDrop(component, item) {
             component.props.selection = item;
+            MealActions.select(component.props.day, item);
           }
         }
       });

@@ -21,10 +21,11 @@ class MealPlanner extends React.Component {
 
   componentWillMount() {
     ChoiceStore.addChangeListener(this._onChange.bind(this));
+    MealStore.addSelectedListener(this._onChange.bind(this));
   }
 
   render() {
-    return <div classNameName="container">
+    return <div>
       <header>
         <h1 className="text-center">Plan &amp; Eat</h1>
       </header>

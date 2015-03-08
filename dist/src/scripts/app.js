@@ -12,7 +12,7 @@ var MealPlanner = _interopRequire(require("./components/MealPlanner"));
 React.render(React.createElement(MealPlanner, null), document.getElementById("mealplanner"));
 
 
-},{"./components/MealPlanner":244,"6to5ify/polyfill":6,"react":236}],2:[function(require,module,exports){
+},{"./components/MealPlanner":245,"6to5ify/polyfill":6,"react":236}],2:[function(require,module,exports){
 (function (global){
 "use strict";
 
@@ -36780,7 +36780,29 @@ var ChoiceActions = {
 module.exports = ChoiceActions;
 
 
-},{"../constants/ChoiceConstants":245,"../dispatcher/AppDispatcher":247}],238:[function(require,module,exports){
+},{"../constants/ChoiceConstants":246,"../dispatcher/AppDispatcher":249}],238:[function(require,module,exports){
+"use strict";
+
+var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
+
+var AppDispatcher = _interopRequire(require("../dispatcher/AppDispatcher"));
+
+var MealConstants = _interopRequire(require("../constants/MealConstants"));
+
+var MealActions = {
+  select: function (day, choice) {
+    AppDispatcher.dispatch({
+      actionType: MealConstants.MEAL_SELECTED,
+      day: day,
+      choice: choice
+    });
+  }
+};
+
+module.exports = MealActions;
+
+
+},{"../constants/MealConstants":247,"../dispatcher/AppDispatcher":249}],239:[function(require,module,exports){
 "use strict";
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
@@ -36819,7 +36841,7 @@ var Choice = React.createClass({ displayName: "Choice",
 module.exports = Choice;
 
 
-},{"react":236,"react-dnd":59}],239:[function(require,module,exports){
+},{"react":236,"react-dnd":59}],240:[function(require,module,exports){
 "use strict";
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
@@ -36868,7 +36890,7 @@ var ChoiceFilter = (function (_React$Component) {
 module.exports = ChoiceFilter;
 
 
-},{"../actions/ChoiceActions":237,"react":236}],240:[function(require,module,exports){
+},{"../actions/ChoiceActions":237,"react":236}],241:[function(require,module,exports){
 "use strict";
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
@@ -36925,7 +36947,7 @@ var ChoiceList = (function (_React$Component) {
 module.exports = ChoiceList;
 
 
-},{"./ChoiceRow":241,"lodash":14,"react":236}],241:[function(require,module,exports){
+},{"./ChoiceRow":242,"lodash":14,"react":236}],242:[function(require,module,exports){
 "use strict";
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
@@ -36978,7 +37000,7 @@ var ChoiceRow = (function (_React$Component) {
 module.exports = ChoiceRow;
 
 
-},{"./Choice":238,"react":236}],242:[function(require,module,exports){
+},{"./Choice":239,"react":236}],243:[function(require,module,exports){
 "use strict";
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
@@ -36986,7 +37008,7 @@ var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["defau
 var React = _interopRequire(require("react"));
 
 var DragDropMixin = require("react-dnd").DragDropMixin;
-
+var MealActions = _interopRequire(require("../actions/MealActions"));
 
 var Meal = React.createClass({ displayName: "Meal",
   mixins: [DragDropMixin],
@@ -36997,6 +37019,7 @@ var Meal = React.createClass({ displayName: "Meal",
         dropTarget: {
           acceptDrop: function acceptDrop(component, item) {
             component.props.selection = item;
+            MealActions.select(component.props.day, item);
           }
         }
       });
@@ -37037,7 +37060,7 @@ var Meal = React.createClass({ displayName: "Meal",
 module.exports = Meal;
 
 
-},{"react":236,"react-dnd":59}],243:[function(require,module,exports){
+},{"../actions/MealActions":238,"react":236,"react-dnd":59}],244:[function(require,module,exports){
 "use strict";
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
@@ -37090,7 +37113,7 @@ var MealList = (function (_React$Component) {
 module.exports = MealList;
 
 
-},{"./Meal":242,"react":236}],244:[function(require,module,exports){
+},{"./Meal":243,"react":236}],245:[function(require,module,exports){
 "use strict";
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
@@ -37133,13 +37156,14 @@ var MealPlanner = (function (_React$Component) {
     componentWillMount: {
       value: function componentWillMount() {
         ChoiceStore.addChangeListener(this._onChange.bind(this));
+        MealStore.addSelectedListener(this._onChange.bind(this));
       },
       writable: true,
       configurable: true
     },
     render: {
       value: function render() {
-        return React.createElement("div", { classNameName: "container" }, React.createElement("header", null, React.createElement("h1", { className: "text-center" }, "Plan & Eat")), React.createElement(MealList, { meals: this.state.meals }), React.createElement(ChoiceFilter, null), React.createElement(ChoiceList, { allChoices: this.state.allChoices }));
+        return React.createElement("div", null, React.createElement("header", null, React.createElement("h1", { className: "text-center" }, "Plan & Eat")), React.createElement(MealList, { meals: this.state.meals }), React.createElement(ChoiceFilter, null), React.createElement(ChoiceList, { allChoices: this.state.allChoices }));
       },
       writable: true,
       configurable: true
@@ -37159,7 +37183,7 @@ var MealPlanner = (function (_React$Component) {
 module.exports = MealPlanner;
 
 
-},{"../stores/ChoiceStore":248,"../stores/MealStore":249,"./ChoiceFilter":239,"./ChoiceList":240,"./MealList":243,"react":236}],245:[function(require,module,exports){
+},{"../stores/ChoiceStore":250,"../stores/MealStore":251,"./ChoiceFilter":240,"./ChoiceList":241,"./MealList":244,"react":236}],246:[function(require,module,exports){
 "use strict";
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
@@ -37171,7 +37195,19 @@ module.exports = keymirror({
 });
 
 
-},{"react/lib/keyMirror":221}],246:[function(require,module,exports){
+},{"react/lib/keyMirror":221}],247:[function(require,module,exports){
+"use strict";
+
+var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
+
+var keymirror = _interopRequire(require("react/lib/keyMirror"));
+
+module.exports = keymirror({
+  MEAL_SELECTED: null
+});
+
+
+},{"react/lib/keyMirror":221}],248:[function(require,module,exports){
 module.exports={
   "mealTimes": [{ "name": "Sun" }, { "name": "Mon" }, { "name": "Tue" }, { "name": "Wed" },
               { "name": "Thu" }, { "name": "Fri" }, { "name": "Sat" } ],
@@ -37233,14 +37269,14 @@ module.exports={
     }]
 }
 
-},{}],247:[function(require,module,exports){
+},{}],249:[function(require,module,exports){
 "use strict";
 
 var Dispatcher = require("flux").Dispatcher;
 module.exports = new Dispatcher();
 
 
-},{"flux":9}],248:[function(require,module,exports){
+},{"flux":9}],250:[function(require,module,exports){
 "use strict";
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
@@ -37337,7 +37373,7 @@ AppDispatcher.register(function (action) {
 module.exports = store;
 
 
-},{"../constants/ChoiceConstants":245,"../data.json":246,"../dispatcher/AppDispatcher":247,"events":7,"lodash":14}],249:[function(require,module,exports){
+},{"../constants/ChoiceConstants":246,"../data.json":248,"../dispatcher/AppDispatcher":249,"events":7,"lodash":14}],251:[function(require,module,exports){
 "use strict";
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
@@ -37351,6 +37387,10 @@ var _classCallCheck = function (instance, Constructor) { if (!(instance instance
 var EventEmitter = require("events").EventEmitter;
 var AppDispatcher = _interopRequire(require("../dispatcher/AppDispatcher"));
 
+var MealConstants = _interopRequire(require("../constants/MealConstants"));
+
+var SELECTED_EVENT = "meal.selected";
+
 var MealStore = (function (EventEmitter) {
   function MealStore() {
     _classCallCheck(this, MealStore);
@@ -37361,6 +37401,13 @@ var MealStore = (function (EventEmitter) {
   _inherits(MealStore, EventEmitter);
 
   _prototypeProperties(MealStore, null, {
+    addSelectedListener: {
+      value: function addSelectedListener(fn) {
+        this.on(SELECTED_EVENT, fn);
+      },
+      writable: true,
+      configurable: true
+    },
     set: {
       value: function set(day, meal) {
         this.meals.set(day, meal);
@@ -37382,9 +37429,18 @@ var MealStore = (function (EventEmitter) {
 
 var store = new MealStore();
 
-AppDispatcher.register(function (action) {});
+AppDispatcher.register(function (action) {
+  switch (action.actionType) {
+    case MealConstants.MEAL_SELECTED:
+      store.set(action.day, action.choice);
+      store.emit(SELECTED_EVENT);
+      break;
+    default:
+      break;
+  }
+});
 
 module.exports = store;
 
 
-},{"../dispatcher/AppDispatcher":247,"events":7}]},{},[1]);
+},{"../constants/MealConstants":247,"../dispatcher/AppDispatcher":249,"events":7}]},{},[1]);
