@@ -4,7 +4,7 @@
 
 ![Plan and Eat](https://raw.github.com/brianium/plan-and-eat/master/plan-and-eat.png "Plan And Eat")
 
-A drag and drop meal planner written with ReactJS and ES6
+A drag and drop meal planner written with React and ES6
 
 ## Running
 
