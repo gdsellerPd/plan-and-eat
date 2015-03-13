@@ -1,20 +1,21 @@
 import {EventEmitter} from 'events';
 import AppDispatcher from '../dispatcher/AppDispatcher';
 import MealConstants from '../constants/MealConstants';
+import {Map} from 'immutable'
 
 const SELECTED_EVENT = 'meal.selected';
 
 class MealStore extends EventEmitter {
   constructor() {
-    this.meals = new Map([
-      ['Sun', null],
-      ['Mon', null],
-      ['Tue', null],
-      ['Wed', null],
-      ['Thu', null],
-      ['Fri', null],
-      ['Sat', null]
-    ]);
+    this.meals = Map({
+      'Sun': null,
+      'Mon': null,
+      'Tue': null,
+      'Wed': null,
+      'Thu': null,
+      'Fri': null,
+      'Sat': null
+    });
   }
 
   addSelectedListener(fn) {
@@ -22,7 +23,7 @@ class MealStore extends EventEmitter {
   }
 
   set(day, meal) {
-    this.meals.set(day, meal);
+    this.meals = this.meals.set(day, meal);
   }
 
   get(day) {

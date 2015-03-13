@@ -2,8 +2,7 @@ jest.dontMock('react/lib/keyMirror');
 jest.dontMock('../../constants/MealConstants');
 jest.dontMock('../MealStore');
 jest.dontMock('lodash');
-
-require('6to5ify/polyfill');
+jest.dontMock('immutable');
 
 describe('MealStore', function () {
 
