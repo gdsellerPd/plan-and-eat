@@ -6,6 +6,8 @@
   "scripts": {
     "test": "jest",
     "build": "gulp",
+    "postinstall": "bower install",
+    "prestart": "npm install",
     "start": "gulp dev"
   },
   "repository": {
