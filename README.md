@@ -11,8 +11,7 @@ A drag and drop meal planner written with React and ES6
 The app should be pretty easy to run.
 
 ```
-$ npm install
-$ npm run dev
+$ npm start
 ```
 
 ## Tests
