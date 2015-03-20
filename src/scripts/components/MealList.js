@@ -8,8 +8,7 @@ class MealList extends React.Component {
   }
 
   render() {
-    let meals = [];
-    this.props.meals.forEach((value, key) => meals.push(<Meal day={key} selection={value} />));
+    let meals = this.props.meals.map((value, key) => <Meal day={key} selection={value} />);
 
     return <ul className="meal-list">
             {meals}

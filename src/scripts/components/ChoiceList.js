@@ -10,9 +10,7 @@ class ChoiceList extends React.Component {
 
   render() {
     let chunks = _.chunk(this.props.allChoices, 4);
-    let rows = [];
-
-    chunks.forEach((choices) => rows.push(<ChoiceRow choices={choices} />));
+    let rows = chunks.map((c) => <ChoiceRow choices={c} />);
 
     return <div className="choices container">
         <h2>Meal Options</h2>

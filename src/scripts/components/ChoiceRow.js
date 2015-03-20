@@ -8,8 +8,7 @@ class ChoiceRow extends React.Component {
   }
 
   render() {
-    let choices = [];
-    this.props.choices.forEach((choice) => choices.push(<Choice item={choice} />));
+    let choices = this.props.choices.map((c) => <Choice item={c} />);
 
     return <div className="row">
       {choices}
