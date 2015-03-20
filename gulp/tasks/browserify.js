@@ -1,6 +1,6 @@
 var gulp = require('gulp'),
     browserify = require('browserify'),
-    to5ify = require('6to5ify'),
+    babelify = require('babelify'),
     reactify = require('reactify'),
     config = require('../config'),
     source = require('vinyl-source-stream'),
@@ -11,7 +11,7 @@ var gulp = require('gulp'),
 gulp.task('browserify', function() {
   return browserify('./src/scripts/app.js')
       .transform(reactify)
-      .transform(to5ify)
+      .transform(babelify)
       .bundle()
       .pipe(source('src/scripts/app.js'))
       .pipe(buffer())
