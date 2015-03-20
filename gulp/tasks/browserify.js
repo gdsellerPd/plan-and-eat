@@ -10,8 +10,8 @@ var gulp = require('gulp'),
 
 gulp.task('browserify', function() {
   return browserify('./src/scripts/app.js')
-      .transform(reactify)
       .transform(babelify)
+      .transform(reactify, {es6:true})
       .bundle()
       .pipe(source('src/scripts/app.js'))
       .pipe(buffer())

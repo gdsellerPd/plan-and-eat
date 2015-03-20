@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest",
     "build": "gulp",
-    "dev": "gulp dev"
+    "start": "gulp dev"
   },
   "repository": {
     "type": "git",
