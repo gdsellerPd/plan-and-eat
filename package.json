@@ -12,18 +12,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:brianium/es6-boilerplate.git"
+    "url": "git@github.com:brianium/plan-and-eat.git"
   },
   "keywords": [
-    "auth",
-    "sports"
+    "reactjs",
+    "food"
   ],
   "author": "Brian Scaturro <scaturrob@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/brianium/es6-boilerplate/issues"
+    "url": "https://github.com/brianium/plan-and-eat/issues"
   },
-  "homepage": "https://github.com/brianium/es6-boilerplate",
+  "homepage": "https://github.com/brianium/plan-and-eat",
   "dependencies": {
     "bower": "^1.3.12",
     "flux": "^2.0.1",
