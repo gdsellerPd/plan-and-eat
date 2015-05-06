@@ -4904,7 +4904,7 @@ button.close {
     display: none !important; } }
 
 html {
-  background: url('../images/crossword.png') repeat left top; }
+  background: url('images/crossword.png') repeat left top; }
 
 body {
   background-color: transparent;
